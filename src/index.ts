@@ -22,7 +22,6 @@ export default function postgresCacheProvider(pool: Pool, options?: Options): Ca
 
   assert.ok(Number.isInteger(ttlMillis) && ttlMillis > 0, 'ttlMillis must be a positive integer')
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   setInterval(() => {
     pool
       .query(`DELETE FROM passport_saml_cache WHERE created_at < now() - $1 * interval '1 milliseconds'`, [ttlMillis])
