@@ -23,14 +23,15 @@ export default function postgresCacheProvider(pool: Pool, options?: Options): Ca
   assert.ok(Number.isInteger(ttlMillis) && ttlMillis > 0, 'ttlMillis must be a positive integer')
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  const noop = () => {}
-  const timeout = setInterval(() => {
+  setInterval(() => {
     pool
       .query(`DELETE FROM passport_saml_cache WHERE created_at < now() - $1 * interval '1 milliseconds'`, [ttlMillis])
-      .then(noop)
+      .then(
+        ({ rowCount }) =>
+          rowCount > 0 && console.info(`passport-saml-cache-postgres: Deleted ${rowCount} stale cache entries`)
+      )
       .catch(console.error)
-  }, ttlMillis)
-  timeout.unref() // Do not prevent Node from shutting down.
+  }, ttlMillis).unref()
 
   return {
     get(key, callback) {
