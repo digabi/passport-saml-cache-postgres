@@ -2,14 +2,20 @@ import type { CacheProvider, CacheItem } from 'passport-saml'
 import type { Pool } from 'pg'
 
 export interface Options {
-  /** The maximum age of a cache entry in milliseconds. Entries older than this are deleted automatically. By default, 1 hour. */
+  /**
+   * The maximum age of a cache entry in milliseconds. Entries older than this are deleted automatically.
+   * A scheduled job deletes old cache entries every `ttlMillis` milliseconds.
+   *
+   * Default value: 1 hour.
+   */
   ttlMillis?: number
 }
 
 const defaultOptions: Required<Options> = {
-  ttlMillis: 1000 * 60 * 6060,
+  ttlMillis: 1000 * 60 * 60,
 }
 
+/** Create a new PostgreSQL cache provider for passport-saml. */
 export default function postgresCacheProvider(pool: Pool, options?: Options): CacheProvider {
   const { ttlMillis } = { ...defaultOptions, ...options }
 

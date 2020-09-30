@@ -15,3 +15,15 @@ passport.use(new SamlStrategy({
     cacheProvider: postgresCacheProvider(pool) // A pg.Pool object
 }))
 ```
+
+## Configuration
+
+The `postgresCacheProvider` function accepts an optional second argument. The default options are as follows:
+
+```typescript
+postgresCacheProvider(pool, {
+  // The maximum age of a cache entry in milliseconds. Entries older than this are deleted automatically.
+  // A scheduled job deletes old cache entries every `ttlMillis` milliseconds.
+  ttlMillis: 1000 * 60 * 60, // 1 hour
+})
+```
