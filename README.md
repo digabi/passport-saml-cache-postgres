@@ -12,6 +12,6 @@ import postgresCacheProvider from 'passport-saml-cache-postgres'
 
 passport.use(new SamlStrategy({
     ... other passport-saml options,
-    cacheProvider: postgresCacheProvider(pool)
+    cacheProvider: postgresCacheProvider(pool) // A pg.Pool object
 }))
 ```
