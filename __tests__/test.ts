@@ -6,7 +6,7 @@ import * as path from 'path'
 import { CacheItem, CacheProvider } from 'passport-saml'
 
 const ttlMillis = 1000
-const delay = (millis: number) => new Promise((resolve) => setTimeout(resolve, millis))
+const delay = promisify(setTimeout)
 
 let pool: pg.Pool
 let cache: CacheProvider
