@@ -36,6 +36,7 @@
   "scripts": {
     "build": "tsc && cp schema.sql dist",
     "lint": "eslint .",
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "prepublish": "npm run build"
   }
 }
