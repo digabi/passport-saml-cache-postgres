@@ -1,3 +1,4 @@
+import * as assert from 'assert'
 import type { CacheProvider, CacheItem } from 'passport-saml'
 import type { Pool } from 'pg'
 
@@ -18,6 +19,8 @@ const defaultOptions: Required<Options> = {
 /** Create a new PostgreSQL cache provider for passport-saml. */
 export default function postgresCacheProvider(pool: Pool, options?: Options): CacheProvider {
   const { ttlMillis } = { ...defaultOptions, ...options }
+
+  assert.ok(Number.isInteger(ttlMillis) && ttlMillis > 0, 'ttlMillis must be a positive integer')
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   const noop = () => {}

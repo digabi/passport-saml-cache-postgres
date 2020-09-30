@@ -34,6 +34,13 @@ beforeEach(() => pool.query('DELETE FROM passport_saml_cache'))
 
 afterAll(() => pool.end())
 
+describe('validation', () => {
+  it('throws an error if ttlMillis is not a positive integer', () => {
+    expect(() => postgresCacheProvider(pool, { ttlMillis: -1 })).toThrowError('ttlMillis must be a positive integer')
+    expect(() => postgresCacheProvider(pool, { ttlMillis: 1.5 })).toThrowError('ttlMillis must be a positive integer')
+  })
+})
+
 describe('get()', () => {
   it('returns null if key does not exist', async () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
