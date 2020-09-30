@@ -35,7 +35,7 @@ export default function postgresCacheProvider(pool: Pool, options?: Options): Ca
     },
     save(key, value, callback) {
       pool.query<{ created_at: Date }>(
-        'INSERT INTO passport_saml_cache (key, value) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING created_at',
+        'INSERT INTO passport_saml_cache (key, value) VALUES ($1, $2) RETURNING created_at',
         [key, JSON.stringify(value)],
         (err, result) => {
           if (err) {
