@@ -36,6 +36,6 @@
   "scripts": {
     "build": "tsc && cp schema.sql dist",
     "lint": "eslint .",
-    "test": "jest"
+    "test": "jest --coverage"
   }
 }

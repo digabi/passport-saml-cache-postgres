@@ -50,13 +50,9 @@ export default function postgresCacheProvider(pool: Pool, options?: Options): Ca
           if (err) {
             callback(err, (null as any) as CacheItem)
           } else {
-            const createdAt = result.rows[0]?.created_at
-            if (createdAt) {
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              callback(null, { createdAt, value })
-            } else {
-              callback(null, (null as any) as CacheItem)
-            }
+            const createdAt = result.rows[0].created_at
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            callback(null, { createdAt, value })
           }
         }
       )
