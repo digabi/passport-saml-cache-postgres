@@ -43,25 +43,20 @@ describe('validation', () => {
 
 describe('get()', () => {
   it('returns null if key does not exist', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const value = await get('key')
-    return expect(value).toBeNull()
+    return expect(await get('key')).toBeNull()
   })
 
   it('returns the value if key exists', async () => {
     await save('key', 'val')
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const value = await promisify(cache.get)('key')
-    expect(value).toBe('val')
+    expect(await get('key')).toBe('val')
   })
 })
 
 describe('save()', () => {
   it('returns the new value & timestamp if key does not exist', async () => {
-    const value = { foo: 'bar' }
-    const result = await promisify(cache.save)('key', value)
-    expect(result.createdAt).toBeInstanceOf(Date)
-    expect(result.value).toBe(value)
+    const result = await save('key', 'val')
+    expect(result?.createdAt).toBeInstanceOf(Date)
+    expect(result?.value).toBe('val')
   })
 
   it('throws an error if key already exists', async () => {
@@ -74,14 +69,13 @@ describe('save()', () => {
 
 describe('remove()', () => {
   it('returns null if key does not exist', async () => {
-    const result = await remove('key')
-    expect(result).toBeNull()
+    expect(await remove('key')).toBeNull()
   })
 
   it('returns the key if it existed', async () => {
     await save('key', 'val')
-    const result = await remove('key')
-    expect(result).toBe('key')
+    expect(await remove('key')).toBe('key')
+    expect(await remove('key')).toBeNull()
   })
 })
 
@@ -105,10 +99,12 @@ describe('error handling', () => {
         }
       }),
     }
-    const cache = postgresCacheProvider((mockPool as any) as pg.Pool)
 
-    await expect(promisify(cache.get)('key')).rejects.toThrow(new Error('Boom!'))
-    await expect(promisify(cache.save)('key', 'value')).rejects.toThrow(new Error('Boom!'))
-    await expect(promisify(cache.remove)('key')).rejects.toThrow(new Error('Boom!'))
+    const cache = postgresCacheProvider((mockPool as any) as pg.Pool)
+    const error = new Error('Boom!')
+
+    await expect(promisify(cache.get)('key')).rejects.toThrow(error)
+    await expect(promisify(cache.save)('key', 'value')).rejects.toThrow(error)
+    await expect(promisify(cache.remove)('key')).rejects.toThrow(error)
   })
 })
