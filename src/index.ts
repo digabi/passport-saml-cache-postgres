@@ -1,5 +1,5 @@
 import * as assert from 'assert'
-import type { CacheProvider, CacheItem } from 'passport-saml'
+import type { CacheProvider } from 'passport-saml'
 import type { Pool } from 'pg'
 
 export interface Options {
@@ -34,41 +34,26 @@ export default function postgresCacheProvider(pool: Pool, options?: Options): Ca
 
   return {
     get(key, callback) {
-      pool.query<{ value: any }>('SELECT value FROM passport_saml_cache WHERE key = $1', [key], (err, result) => {
-        if (err) {
-          callback(err, null)
-        } else {
-          callback(null, result.rows[0]?.value ?? null)
-        }
-      })
+      pool
+        .query<{ value: any }>('SELECT value FROM passport_saml_cache WHERE key = $1', [key])
+        .then((result) => callback(null, result.rows[0]?.value ?? null))
+        .catch((err) => callback(err, null))
     },
     save(key, value, callback) {
-      pool.query<{ created_at: Date }>(
-        'INSERT INTO passport_saml_cache (key, value) VALUES ($1, $2) RETURNING created_at',
-        [key, JSON.stringify(value)],
-        (err, result) => {
-          if (err) {
-            callback(err, (null as any) as CacheItem)
-          } else {
-            const createdAt = result.rows[0].created_at
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            callback(null, { createdAt, value })
-          }
-        }
-      )
+      pool
+        .query<{ created_at: Date }>(
+          'INSERT INTO passport_saml_cache (key, value) VALUES ($1, $2) RETURNING created_at',
+          [key, JSON.stringify(value)]
+        )
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        .then((result) => callback(null, { createdAt: result.rows[0].created_at, value }))
+        .catch((err) => callback(err, null as any))
     },
     remove(key, callback) {
-      pool.query<{ key: string }>(
-        'DELETE FROM passport_saml_cache WHERE key = $1 RETURNING key',
-        [key],
-        (err, result) => {
-          if (err) {
-            callback(err, (null as any) as string)
-          } else {
-            callback(null, result.rows[0]?.key ?? null)
-          }
-        }
-      )
+      pool
+        .query<{ key: string }>('DELETE FROM passport_saml_cache WHERE key = $1 RETURNING key', [key])
+        .then((result) => callback(null, result.rows[0]?.key ?? null))
+        .catch((err) => callback(err, null as any))
     },
   }
 }

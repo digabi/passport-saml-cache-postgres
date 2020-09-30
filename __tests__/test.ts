@@ -90,17 +90,10 @@ describe('expiration', () => {
 describe('error handling', () => {
   it('calls the callback with an error object if an error occurs', async () => {
     const mockPool = {
-      query: jest.fn((query: string, values: any[], callback?: (err: Error | null, result: any) => void) => {
-        if (!callback) {
-          // Promise API
-          return Promise.reject('Boom!')
-        } else {
-          callback(new Error('Boom!'), null)
-        }
-      }),
+      query: jest.fn(() => Promise.reject(new Error('Boom!'))),
     }
 
-    const cache = postgresCacheProvider((mockPool as any) as pg.Pool)
+    const cache = postgresCacheProvider(mockPool as any)
     const error = new Error('Boom!')
 
     await expect(promisify(cache.get)('key')).rejects.toThrow(error)
