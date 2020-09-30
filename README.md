@@ -1,5 +1,7 @@
 # passport-saml-cache-postgres
 
+![CI](https://github.com/digabi/passport-saml-cache-postgres/workflows/CI/badge.svg)
+
 A PostgreSQL-backed cache provider for [passport-saml](https://github.com/node-saml/passport-saml).
 
 ## Usage
