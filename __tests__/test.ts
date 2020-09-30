@@ -4,10 +4,8 @@ import { promisify } from 'util'
 import { promises as fs } from 'fs'
 import * as path from 'path'
 import { CacheItem, CacheProvider } from 'passport-saml'
-import childProcess from 'child_process'
 
 const ttlMillis = 1000
-const exec = promisify(childProcess.exec)
 const delay = (millis: number) => new Promise((resolve) => setTimeout(resolve, millis))
 
 let pool: pg.Pool
@@ -17,9 +15,12 @@ let save: (key: string, value: any) => Promise<CacheItem | null>
 let remove: (key: string) => Promise<string | null>
 
 beforeAll(async () => {
-  await exec('createdb passport-saml-cache-postgres-unittest || true')
+  pool = new pg.Pool({
+    database: 'passport-saml-cache-postgres-unittest',
+    user: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD,
+  })
 
-  pool = new pg.Pool({ database: 'passport-saml-cache-postgres-unittest' })
   cache = postgresCacheProvider(pool, { ttlMillis })
   get = promisify(cache.get)
   save = promisify(cache.save)
@@ -56,15 +57,11 @@ describe('save()', () => {
     expect(result.value).toBe(value)
   })
 
-  it('does nothing and returns null if key exists', async () => {
-    // First save
+  it('throws an error if key already exists', async () => {
     await save('key', 'val1')
-    // Second save
-    const result = await save('key', 'val2')
-    expect(result).toBeNull()
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const value = await get('key')
-    expect(value).toBe('val1')
+    return expect(save('key', 'val2')).rejects.toThrow(
+      new Error('duplicate key value violates unique constraint "passport_saml_cache_pkey"')
+    )
   })
 })
 
@@ -83,20 +80,8 @@ describe('remove()', () => {
 
 describe('expiration', () => {
   it('deletes expired key automatically', async () => {
-    // T = 0
-    await save('key1', 'val1')
-
-    // T = 0.5
-    await delay(ttlMillis / 2)
-
-    expect(await get('key1')).toBe('val1')
-    expect(await get('key2')).toBeNull()
-    await save('key2', 'val2')
-
-    // T = 1.5
-    await delay(ttlMillis)
-
-    expect(await get('key1')).toBeNull()
-    expect(await get('key2')).toBe('val2')
+    await save('key', 'val')
+    await delay(ttlMillis * 2)
+    expect(await get('key')).toBeNull()
   })
 })
