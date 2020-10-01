@@ -2,6 +2,10 @@ import * as assert from 'assert'
 import type { CacheProvider } from 'passport-saml'
 import type { Pool } from 'pg'
 
+export interface Logger {
+  info: (message: string) => void
+  error: (message: string, err: Error) => void
+}
 export interface Options {
   /**
    * The maximum age of a cache entry in milliseconds. Entries older than this are deleted automatically.
@@ -10,26 +14,31 @@ export interface Options {
    * Default value: 1 hour.
    */
   ttlMillis?: number
+  /** A logger to use. By default, messages are logged to console. */
+  logger?: Logger
 }
 
 const defaultOptions: Required<Options> = {
   ttlMillis: 1000 * 60 * 60,
+  logger: console,
+}
+
+export interface PostgresCacheProvider extends CacheProvider {
+  /** Close the cache. This stops the scheduled job that deletes old cache entries. */
+  close: () => void
 }
 
 /** Create a new PostgreSQL cache provider for passport-saml. */
-export default function postgresCacheProvider(pool: Pool, options?: Options): CacheProvider {
-  const { ttlMillis } = { ...defaultOptions, ...options }
+export default function postgresCacheProvider(pool: Pool, options?: Options): PostgresCacheProvider {
+  const { ttlMillis, logger } = { ...defaultOptions, ...options }
 
   assert.ok(Number.isInteger(ttlMillis) && ttlMillis > 0, 'ttlMillis must be a positive integer')
 
-  setInterval(() => {
+  const interval = setInterval(() => {
     pool
       .query(`DELETE FROM passport_saml_cache WHERE created_at < now() - $1 * interval '1 milliseconds'`, [ttlMillis])
-      .then(
-        ({ rowCount }) =>
-          rowCount > 0 && console.info(`passport-saml-cache-postgres: Deleted ${rowCount} stale cache entries`)
-      )
-      .catch(console.error)
+      .then(({ rowCount }) => logger.info(`passport-saml-cache-postgres: Deleted ${rowCount} stale cache entries`))
+      .catch((err) => logger.error('passport-saml-cache-postgres: ', err))
   }, ttlMillis).unref()
 
   return {
@@ -54,6 +63,9 @@ export default function postgresCacheProvider(pool: Pool, options?: Options): Ca
         .query<{ key: string }>('DELETE FROM passport_saml_cache WHERE key = $1 RETURNING key', [key])
         .then((result) => callback(null, result.rows[0]?.key ?? null))
         .catch((err) => callback(err, null as any))
+    },
+    close() {
+      clearInterval(interval)
     },
   }
 }

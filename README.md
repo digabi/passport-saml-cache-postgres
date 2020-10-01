@@ -29,3 +29,8 @@ postgresCacheProvider(pool, {
   ttlMillis: 1000 * 60 * 60, // 1 hour
 })
 ```
+
+## Closing the cache
+
+The cache can be closed by calling the `.close()`-method. This stops the
+scheduled job that periodically clears stale cache entries.

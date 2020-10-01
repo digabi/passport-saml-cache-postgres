@@ -1,15 +1,15 @@
 import * as pg from 'pg'
-import postgresCacheProvider from '../src'
+import postgresCacheProvider, { PostgresCacheProvider } from '../src'
 import { promisify } from 'util'
 import { promises as fs } from 'fs'
 import * as path from 'path'
-import { CacheItem, CacheProvider } from 'passport-saml'
+import { CacheItem } from 'passport-saml'
 
 const ttlMillis = 1000
 const delay = promisify(setTimeout)
 
 let pool: pg.Pool
-let cache: CacheProvider
+let cache: PostgresCacheProvider
 let get: (key: string) => Promise<any>
 let save: (key: string, value: any) => Promise<CacheItem | null>
 let remove: (key: string) => Promise<string | null>
@@ -21,18 +21,22 @@ beforeAll(async () => {
     password: process.env.POSTGRES_PASSWORD,
   })
 
-  cache = postgresCacheProvider(pool, { ttlMillis })
-  get = promisify(cache.get)
-  save = promisify(cache.save)
-  remove = promisify(cache.remove)
-
   const schema = await fs.readFile(path.join(__dirname, '../schema.sql'), 'utf-8')
   await pool.query(schema, [])
 })
 
-beforeEach(() => pool.query('DELETE FROM passport_saml_cache'))
-
 afterAll(() => pool.end())
+
+beforeEach(async () => {
+  await pool.query('DELETE FROM passport_saml_cache')
+
+  cache = postgresCacheProvider(pool, { ttlMillis })
+  remove = promisify(cache.remove)
+  get = promisify(cache.get)
+  save = promisify(cache.save)
+})
+
+afterEach(() => cache.close())
 
 describe('validation', () => {
   it('throws an error if ttlMillis is not a positive integer', () => {
@@ -93,11 +97,14 @@ describe('error handling', () => {
       query: jest.fn(() => Promise.reject(new Error('Boom!'))),
     }
 
-    const cache = postgresCacheProvider(mockPool as any)
-    const error = new Error('Boom!')
+    const cache = postgresCacheProvider(mockPool as any, { ttlMillis })
 
+    const error = new Error('Boom!')
     await expect(promisify(cache.get)('key')).rejects.toThrow(error)
     await expect(promisify(cache.save)('key', 'value')).rejects.toThrow(error)
     await expect(promisify(cache.remove)('key')).rejects.toThrow(error)
+
+    await delay(ttlMillis * 2) // Wait a bit. The cleanup job error should fire as well.
+    cache.close()
   })
 })
