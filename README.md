@@ -26,7 +26,10 @@ The `postgresCacheProvider` function accepts an optional second argument. The de
 postgresCacheProvider(pool, {
   // The maximum age of a cache entry in milliseconds. Entries older than this are deleted automatically.
   // A scheduled job deletes old cache entries every `ttlMillis` milliseconds.
-  ttlMillis: 1000 * 60 * 60, // 1 hour
+  ttlMillis: 1000 * 60 * 60, // 1 hour,
+  // A logger to use. By default, messages are logged to console.
+  // The logger should support at least `logger.info()` and `logger.error()` methods.
+  logger: console,
 })
 ```
 
