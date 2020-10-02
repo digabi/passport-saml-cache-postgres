@@ -1,6 +1,6 @@
 {
   "name": "passport-saml-cache-postgres",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "A PostgreSQL-backed cache provider for passport-saml",
   "main": "dist/index.js",
   "repository": "https://github.com/digabi/passport-saml-cache-postgres",
