@@ -6,6 +6,10 @@ A PostgreSQL-backed cache provider for [passport-saml](https://github.com/node-s
 
 ## Usage
 
+```
+$ npm install passport-saml-cache-postgres
+```
+
 Create a `passport_saml_cache` table in your database. The default schema can be found in [schema.sql](schema.sql).
 
 ```typescript
