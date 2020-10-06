@@ -17,8 +17,6 @@ let remove: (key: string) => Promise<string | null>
 beforeAll(async () => {
   pool = new pg.Pool({
     database: 'passport-saml-cache-postgres-unittest',
-    user: process.env.POSTGRES_USER,
-    password: process.env.POSTGRES_PASSWORD,
   })
 
   const schema = await fs.readFile(path.join(__dirname, '../schema.sql'), 'utf-8')
