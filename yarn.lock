@@ -666,9 +666,9 @@
   integrity sha512-f5j5b/Gf71L+dbqxIpQ4Z2WlmI/mPJ0fOkGGmFgtb6sAu97EPczzbS3/tJKxmcYDj55OX6ssqwDAWOHIYDRDGA==
 
 "@types/passport-saml@^1.1.2":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@types/passport-saml/-/passport-saml-1.1.2.tgz#f32ac2321eb25ec7bdbb1f3a5313b596bb0887e6"
-  integrity sha512-vpSdcb7V/bFxrvZJwSqnBr0qEqIhtOnwRBxw+Dvq4UkVbEgcCOkxF4tERCCFfA+FP3lp63VCCAifZLQrF5JkXA==
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/@types/passport-saml/-/passport-saml-1.1.3.tgz#efc57902a07ebe1ec114d00acd8d990e873813a1"
+  integrity sha512-4kqfyTN6Ud8xTPIdmsYDOBVs4vQFQRcLWhMcGLYiMBc0sFeC44k0Q8Z8v1TIYTmZUrqaO6rbf78GZXl4xAvCRA==
   dependencies:
     "@types/express" "*"
     "@types/passport" "*"
