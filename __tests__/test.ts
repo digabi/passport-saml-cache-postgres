@@ -44,9 +44,7 @@ describe('validation', () => {
 })
 
 describe('get()', () => {
-  it('returns null if key does not exist', async () => {
-    return expect(await get('key')).toBeNull()
-  })
+  it('returns null if key does not exist', async () => expect(await get('key')).toBeNull())
 
   it('returns the value if key exists', async () => {
     await save('key', 'val')
