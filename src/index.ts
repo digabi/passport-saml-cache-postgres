@@ -1,5 +1,5 @@
 import * as assert from 'assert'
-import type { CacheProvider } from 'passport-saml'
+import type { CacheItem, CacheProvider } from 'passport-saml'
 import type { Pool } from 'pg'
 
 export interface Logger {
@@ -38,7 +38,7 @@ export default function postgresCacheProvider(pool: Pool, options?: Options): Po
     pool
       .query(`DELETE FROM passport_saml_cache WHERE created_at < now() - $1 * interval '1 milliseconds'`, [ttlMillis])
       .then(({ rowCount }) => logger.info(`passport-saml-cache-postgres: Deleted ${rowCount} stale cache entries`))
-      .catch((err) => logger.error('passport-saml-cache-postgres: ', err))
+      .catch((err) => logger.error('passport-saml-cache-postgres: ', err as Error))
   }, ttlMillis).unref()
 
   return {
@@ -46,23 +46,23 @@ export default function postgresCacheProvider(pool: Pool, options?: Options): Po
       pool
         .query<{ value: any }>('SELECT value FROM passport_saml_cache WHERE key = $1', [key])
         .then((result) => callback(null, result.rows[0]?.value ?? null))
-        .catch((err) => callback(err, null))
+        .catch((err) => callback(err as Error, null))
     },
     save(key, value, callback) {
       pool
         .query<{ created_at: Date }>(
           'INSERT INTO passport_saml_cache (key, value) VALUES ($1, $2) RETURNING created_at',
-          [key, JSON.stringify(value)]
+          [key, JSON.stringify(value)],
         )
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         .then((result) => callback(null, { createdAt: result.rows[0].created_at, value }))
-        .catch((err) => callback(err, null as any))
+        .catch((err) => callback(err as Error, null as unknown as CacheItem))
     },
     remove(key, callback) {
       pool
         .query<{ key: string }>('DELETE FROM passport_saml_cache WHERE key = $1 RETURNING key', [key])
         .then((result) => callback(null, result.rows[0]?.key ?? null))
-        .catch((err) => callback(err, null as any))
+        .catch((err) => callback(err as Error, ''))
     },
     close() {
       clearInterval(interval)

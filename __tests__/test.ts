@@ -4,6 +4,7 @@ import { promisify } from 'util'
 import { promises as fs } from 'fs'
 import * as path from 'path'
 import { CacheItem } from 'passport-saml'
+import { Pool, Submittable } from 'pg'
 
 const ttlMillis = 1000
 const delay = promisify(setTimeout)
@@ -62,7 +63,7 @@ describe('save()', () => {
   it('throws an error if key already exists', async () => {
     await save('key', 'val1')
     return expect(save('key', 'val2')).rejects.toThrow(
-      new Error('duplicate key value violates unique constraint "passport_saml_cache_pkey"')
+      new Error('duplicate key value violates unique constraint "passport_saml_cache_pkey"'),
     )
   })
 })
@@ -93,6 +94,7 @@ describe('error handling', () => {
       query: jest.fn(() => Promise.reject(new Error('Boom!'))),
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const cache = postgresCacheProvider(mockPool as any, { ttlMillis })
 
     const error = new Error('Boom!')
