@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/digabi/passport-saml-cache-postgres/workflows/CI/badge.svg)
 
-A PostgreSQL-backed cache provider for [passport-saml](https://github.com/node-saml/passport-saml).
+A PostgreSQL-backed cache provider for [@node-saml/passport-saml](https://github.com/node-saml/passport-saml).
 
 ## Usage
 
@@ -13,7 +13,7 @@ $ npm install passport-saml-cache-postgres
 Create a `passport_saml_cache` table in your database. The default schema can be found in [schema.sql](schema.sql).
 
 ```typescript
-import { Strategy as SamlStrategy } from 'passport-saml'
+import { Strategy as SamlStrategy } from '@node-saml/passport-saml'
 import postgresCacheProvider from 'passport-saml-cache-postgres'
 
 passport.use(new SamlStrategy({

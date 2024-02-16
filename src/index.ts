@@ -1,5 +1,5 @@
 import * as assert from 'assert'
-import type { CacheItem, CacheProvider } from 'passport-saml'
+import type { CacheProvider } from '@node-saml/passport-saml'
 import type { Pool } from 'pg'
 
 export interface Logger {
@@ -42,27 +42,23 @@ export default function postgresCacheProvider(pool: Pool, options?: Options): Po
   }, ttlMillis).unref()
 
   return {
-    get(key, callback) {
-      pool
-        .query<{ value: any }>('SELECT value FROM passport_saml_cache WHERE key = $1', [key])
-        .then((result) => callback(null, result.rows[0]?.value ?? null))
-        .catch((err) => callback(err as Error, null))
+    async getAsync(key) {
+      const result = await pool.query<{ value: string }>('SELECT value FROM passport_saml_cache WHERE key = $1', [key])
+      return result.rows[0]?.value ?? null
     },
-    save(key, value, callback) {
-      pool
-        .query<{ created_at: Date }>(
-          'INSERT INTO passport_saml_cache (key, value) VALUES ($1, $2) RETURNING created_at',
-          [key, JSON.stringify(value)],
-        )
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        .then((result) => callback(null, { createdAt: result.rows[0].created_at, value }))
-        .catch((err) => callback(err as Error, null as unknown as CacheItem))
+    async saveAsync(key, value) {
+      const result = await pool.query<{ created_at: Date }>(
+        'INSERT INTO passport_saml_cache (key, value) VALUES ($1, $2) RETURNING created_at',
+        [key, JSON.stringify(value)],
+      )
+
+      return { createdAt: result.rows[0].created_at.getTime(), value }
     },
-    remove(key, callback) {
-      pool
-        .query<{ key: string }>('DELETE FROM passport_saml_cache WHERE key = $1 RETURNING key', [key])
-        .then((result) => callback(null, result.rows[0]?.key ?? null))
-        .catch((err) => callback(err as Error, ''))
+    async removeAsync(key) {
+      const result = await pool.query<{ key: string }>('DELETE FROM passport_saml_cache WHERE key = $1 RETURNING key', [
+        key,
+      ])
+      return result.rows[0]?.key ?? null
     },
     close() {
       clearInterval(interval)
