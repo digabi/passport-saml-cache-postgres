@@ -47,7 +47,7 @@ describe('get()', () => {
 
 describe('save()', () => {
   it('returns the new value & timestamp if key does not exist', async () => {
-    const result = await cache.saveAsync('key', 'val')
+    const result = await cache.saveAsync('_a823a9884699d6a26a8ad2d1f013f6bdf3f6c226', 'val')
     expect(result?.createdAt).not.toBeGreaterThan(new Date().getTime())
     expect(result?.value).toBe('val')
   })
