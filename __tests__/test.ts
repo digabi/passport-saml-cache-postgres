@@ -16,7 +16,7 @@ beforeAll(async () => {
   })
 
   const schema = await fs.readFile(path.join(__dirname, '../schema.sql'), 'utf-8')
-  await pool.query(schema, [])
+  await pool.query(schema)
 })
 
 afterAll(() => pool.end())
